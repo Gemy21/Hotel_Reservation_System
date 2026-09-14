@@ -1,3 +1,4 @@
+
 CREATE DATABASE HotelReservationSystem;
 GO
 
@@ -23,6 +24,7 @@ ChechIn date,
 ChekOut date,
 HotelId int,
 BuildingId int,
+RoomType nvarchar(50),
 FOREIGN KEY(HotelId) references Hotel(Id),
 FOREIGN KEY(BuildingId) references Building(Id));
 
@@ -59,3 +61,11 @@ CustomerId int,
 FOREIGN KEY(HotelId) references Hotel(Id),
 FOREIGN KEY(RoomId) references Room(Id),
 FOREIGN KEY(CustomerId) references Customer(Id));
+
+CREATE TABLE [Users] (
+    [Id] int NOT NULL IDENTITY,
+    [Username] nvarchar(max) NOT NULL,
+    [Password] nvarchar(max) NOT NULL,
+    [Roles] nvarchar(max) NOT NULL,
+    CONSTRAINT [PK_Users] PRIMARY KEY ([Id])
+);
