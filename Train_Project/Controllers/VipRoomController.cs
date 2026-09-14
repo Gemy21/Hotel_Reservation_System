@@ -18,7 +18,6 @@ namespace Train_Project.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> GetAllVipRooms()
         {
             var vipRooms = await vipRoomService.GetAllVipRoomsAsync();
