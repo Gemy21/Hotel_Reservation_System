@@ -84,7 +84,7 @@ namespace Train_Project
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-            app.UseMiddleware<RateLimitMiddleware>();
+           //app.UseMiddleware<RateLimitMiddleware>();
 
 
             app.MapControllers();
