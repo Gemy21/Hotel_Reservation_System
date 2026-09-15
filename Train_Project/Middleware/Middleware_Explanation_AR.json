@@ -1,0 +1,85 @@
+{
+  "العنوان": "شرح Middleware في مشروع Hotel Reservation System",
+  "الهدف": "شرح ملفي RequestLoggingMiddleware و ExceptionMiddleware باللغة العربية بطريقة تساعدني على فهم الكود وليس مجرد نسخه.",
+  "مفاهيم_أساسية": {
+    "Middleware": "جزء من التطبيق يمر من خلاله الـ HTTP Request قبل أن يصل إلى الـ Controller، ويمكنه تنفيذ شيء قبل وبعد الـ Controller.",
+    "RequestDelegate": "يمثل الجزء التالي من سلسلة الـ Middleware. عندما نكتب await _next(context)، فنحن نقول للتطبيق: كمل تنفيذ الـ Request وانتقل للمرحلة التالية.",
+    "HttpContext": "يحتوي على كل المعلومات الخاصة بالـ HTTP Request والـ HTTP Response، مثل الـ Method والـ Path والـ StatusCode والـ Headers.",
+    "InvokeAsync": "الدالة التي يستدعيها ASP.NET Core لتشغيل الـ Middleware. نستخدمها لتنفيذ منطق الـ Middleware ثم تمرير الـ Request إلى المرحلة التالية.",
+    "ILogger": "نظام الـ Logging المدمج في ASP.NET Core، ويستخدم لتسجيل معلومات وأخطاء التطبيق في الـ Console أو أنظمة Logging أخرى.",
+    "await": "يجعل البرنامج ينتظر انتهاء العملية بشكل غير متزامن بدون تجميد Thread أثناء انتظار العملية.",
+    "try_catch": "طريقة للتعامل مع الـ Exceptions. نضع الكود الذي قد يسبب خطأ داخل try، وإذا حدث Exception يتم التعامل معه داخل catch.",
+    "StatusCode": "رقم يوضح نتيجة الـ HTTP Request، مثل 200 للنجاح، 404 عندما لا يوجد المورد، و500 عند حدوث خطأ غير متوقع.",
+    "TraceIdentifier": "معرف فريد للـ Request الحالي، ويمكن استخدامه لمتابعة Request معين داخل الـ Logs عند حدوث مشكلة.",
+    "Stopwatch": "أداة لقياس الوقت الذي استغرقه تنفيذ جزء معين من الكود، واستخدمناها هنا لمعرفة مدة تنفيذ الـ Request.",
+    "finally": "جزء من try/catch يتم تنفيذه سواء حدث Exception أم لا. استخدمناه في Logging حتى يتم تسجيل وقت الـ Request حتى لو حدث خطأ."
+  },
+  "RequestLoggingMiddleware": {
+    "المسار": "Train_Project/Middleware/RequestLoggingMiddleware.cs",
+    "الهدف": "تسجيل معلومات عن كل HTTP Request يدخل إلى الـ API، مثل نوع الطلب والـ Endpoint والـ Status Code والوقت الذي استغرقه.",
+    "الأجزاء": {
+      "RequestDelegate_next": "يخزن الـ Middleware التالي حتى نستطيع تمرير الـ Request إليه باستخدام await _next(context).",
+      "ILogger_logger": "يستخدم لكتابة معلومات الـ Request في نظام Logging الخاص بـ ASP.NET Core.",
+      "Stopwatch_StartNew": "يبدأ عداد الوقت عند بداية الـ Request.",
+      "await_next": "يسمح للـ Request بالاستمرار إلى الـ Middleware التالي ثم الـ Controller.",
+      "finally": "يضمن أن عملية تسجيل الـ Request ستحدث حتى لو حصل Exception أثناء التنفيذ.",
+      "context_Request_Method": "نوع HTTP Request مثل GET أو POST أو PUT أو DELETE.",
+      "context_Request_Path": "المسار الذي طلبه المستخدم، مثل /api/hotels.",
+      "context_Response_StatusCode": "الـ Status Code الذي رجع من الـ API مثل 200 أو 404 أو 500.",
+      "ElapsedMilliseconds": "عدد الـ milliseconds التي استغرقها تنفيذ الـ Request بالكامل."
+    },
+    "مثال_Log": "HTTP GET /api/hotels responded 200 in 43ms",
+    "معنى_المثال": "المستخدم عمل GET على /api/hotels، والـ API رجع Status Code 200، والعملية استغرقت 43 milliseconds."
+  },
+  "ExceptionMiddleware": {
+    "المسار": "Train_Project/Middleware/ExceptionMiddleware.cs",
+    "الهدف": "التعامل مع الـ Exceptions التي لم يتم التعامل معها في Controllers أو Services بشكل مركزي، بدل كتابة try/catch في كل Controller.",
+    "تدفق_الطلب": "Request -> ExceptionMiddleware -> RequestLoggingMiddleware -> RateLimitMiddleware -> Authentication -> Authorization -> Controller -> Service -> Database",
+    "عند_حدوث_Exception": "إذا حدث Exception في جزء من الـ Pipeline بعد ExceptionMiddleware، يتم الرجوع إلى ExceptionMiddleware، ويتم تنفيذ catch وإرجاع Response مناسب للمستخدم.",
+    "الأجزاء": {
+      "try": "يحتوي على await _next(context)، أي يسمح للـ Request بالاستمرار في بقية الـ Pipeline.",
+      "catch_Exception": "يمسك أي Exception غير متعامل معه، ثم يسجل الخطأ باستخدام ILogger.",
+      "LogError": "يسجل الـ Exception وتفاصيله في الـ Logs حتى يستطيع المطور معرفة سبب المشكلة.",
+      "Status500": "نضع Status Code 500 لأن الخطأ غير متوقع من جانب الخادم.",
+      "ContentType_application_json": "نخبر العميل أن الـ Response الذي سيرجع سيكون بصيغة JSON.",
+      "statusCode": "يعرض رقم الـ Status Code في الـ JSON Response.",
+      "message": "رسالة عامة للمستخدم بدلاً من إرسال تفاصيل الخطأ الداخلية.",
+      "traceId": "معرف يساعدنا في ربط الـ Response بالـ Log الخاص بنفس الـ Request."
+    },
+    "مثال_Response": {
+      "statusCode": 500,
+      "message": "An unexpected error occurred.",
+      "traceId": "معرف الـ Request"
+    },
+    "لماذا_لا_نرسل_Exception_نفسه": "لأن Exception قد يحتوي على معلومات داخلية عن قاعدة البيانات أو الملفات أو التطبيق، لذلك الأفضل أن يرى المستخدم رسالة عامة بينما نحتفظ بالتفاصيل في الـ Logs للمطور."
+  },
+  "لماذا_استخدمنا_الاثنين": {
+    "Logging": "يساعدنا على معرفة ماذا حدث في الـ API ومدة تنفيذ كل Request.",
+    "ExceptionHandling": "يمنع ظهور Exceptions غير منظمة للمستخدم ويعطي API Response موحد عند حدوث خطأ غير متوقع.",
+    "معاً": "الـ ExceptionMiddleware يتعامل مع الأخطاء، والـ LoggingMiddleware يسجل نتيجة ومدة الـ Request."
+  },
+  "ترتيب_Program_cs": {
+    "الكود": [
+      "app.UseHttpsRedirection();",
+      "app.UseMiddleware<ExceptionMiddleware>();",
+      "app.UseMiddleware<RequestLoggingMiddleware>();",
+      "app.UseMiddleware<RateLimitMiddleware>();",
+      "app.UseAuthentication();",
+      "app.UseAuthorization();",
+      "app.MapControllers();"
+    ],
+    "ملاحظة": "ترتيب الـ Middleware مهم. وضع ExceptionMiddleware في البداية يسمح له بالتقاط Exceptions التي تحدث في المراحل التي تأتي بعده. ويجب أن يأتي UseAuthentication قبل UseAuthorization."
+  },
+  "أشياء_يجب_أن_أفهمها_قبل_الانتقال": [
+    "ما هو HTTP Request و HTTP Response؟",
+    "ما معنى GET و POST و PUT و DELETE؟",
+    "ما هو Status Code؟",
+    "ما هو Middleware Pipeline؟",
+    "ما وظيفة RequestDelegate؟",
+    "ما الفرق بين try/catch و finally؟",
+    "ما وظيفة ILogger؟",
+    "ما الفرق بين Exception و Response؟",
+    "لماذا نستخدم async و await؟",
+    "لماذا ترتيب Middleware مهم؟"
+  ]
+}
