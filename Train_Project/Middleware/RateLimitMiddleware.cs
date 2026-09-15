@@ -1,41 +1,68 @@
-﻿namespace Train_Project.Middleware
+using System.Collections.Concurrent;
+
+namespace Train_Project.Middleware
 {
     public class RateLimitMiddleware
     {
         private readonly RequestDelegate _next;
 
-        private static int Counter = 0;
+        // Keep a separate request counter for each IP address.
+        private static readonly ConcurrentDictionary<string, RequestInfo> Requests = new();
 
-        private static DateTime LastRequestTime = DateTime.Now;
+        // Maximum number of requests allowed from one IP in the time window.
+        private const int MaxRequests = 3;
+        private static readonly TimeSpan TimeWindow = TimeSpan.FromSeconds(10);
 
         public RateLimitMiddleware(RequestDelegate next)
         {
-            this._next = next;
+            _next = next;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task InvokeAsync(HttpContext httpContext)
         {
-            Counter++;
-            if (DateTime.Now.Subtract(LastRequestTime).Seconds > 10)
-            {
-                Counter = 1;
-                LastRequestTime = DateTime.Now;
-                await _next(httpContext);
+            // Get the client's IP address.
+            var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
-            }
-            else
+            var now = DateTime.UtcNow;
+
+            // Get the existing request information for this IP,
+            // or create a new entry if this is the first request.
+            var requestInfo = Requests.GetOrAdd(
+                ipAddress,
+                _ => new RequestInfo
+                {
+                    Count = 0,
+                    WindowStart = now
+                });
+
+            lock (requestInfo)
             {
-                if (Counter > 3)
+                // If the 10-second window has expired, start a new window.
+                if (now - requestInfo.WindowStart >= TimeWindow)
                 {
-                    LastRequestTime = DateTime.Now;
-                    await httpContext.Response.WriteAsync("Rate limit exceeded. Please try again later.");
+                    requestInfo.Count = 0;
+                    requestInfo.WindowStart = now;
                 }
-                else
+
+                requestInfo.Count++;
+
+                // If the IP has exceeded the limit, stop the request.
+                if (requestInfo.Count > MaxRequests)
                 {
-                    LastRequestTime = DateTime.Now;
-                    await _next(httpContext);
+                    httpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                    httpContext.Response.ContentType = "text/plain";
+
+                    return;
                 }
             }
+
+            await _next(httpContext);
+        }
+
+        private class RequestInfo
+        {
+            public int Count { get; set; }
+            public DateTime WindowStart { get; set; }
         }
     }
 }
