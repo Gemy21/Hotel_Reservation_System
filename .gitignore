@@ -1,0 +1,31 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio cache
+.vscode/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+
+# NuGet
+packages/
+*.nupkg
+
+# Logs
+*.log
+
+# Database local files
+*.mdf
+*.ldf
+
+# OS files
+.DS_Store
+Thumbs.db
