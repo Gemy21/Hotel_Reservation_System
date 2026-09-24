@@ -11,7 +11,7 @@ namespace Train_Project.Data.Configurations
 
             builder.ToTable("Room");
 
-            builder.Property(e => e.Id).ValueGeneratedNever();
+            builder.Property(e => e.Id).ValueGeneratedOnAdd();
             builder.Property(e => e.IsAvailable).HasDefaultValue(true);
 
             builder.HasOne(d => d.Building).WithMany(p => p.Rooms)

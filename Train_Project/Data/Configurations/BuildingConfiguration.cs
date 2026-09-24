@@ -14,7 +14,7 @@ namespace Train_Project.Data.Configurations
 
             builder.ToTable("Building");
 
-            builder.Property(e => e.Id).ValueGeneratedNever();
+            builder.Property(e => e.Id).ValueGeneratedOnAdd ();
             builder.Property(e => e.Location)
                     .HasMaxLength(60)
                     .IsUnicode(false);

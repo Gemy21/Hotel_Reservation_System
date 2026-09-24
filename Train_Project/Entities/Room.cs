@@ -28,4 +28,7 @@ public partial class Room
     public RoomType RoomType { get; set; }
 
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+
+
+    public virtual VipRoom? VipRoom { get; set; }
 }

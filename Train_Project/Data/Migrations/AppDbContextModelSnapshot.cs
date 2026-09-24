@@ -44,7 +44,7 @@ namespace Train_Project.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Train_Project.Entities.Building", b =>

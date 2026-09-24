@@ -12,7 +12,7 @@ namespace Train_Project.Data.Configurations
 
             builder.ToTable("Customer");
 
-            builder.Property(e => e.Id).ValueGeneratedNever();
+            builder.Property(e => e.Id).ValueGeneratedOnAdd();
             builder.Property(e => e.Email)
                 .HasMaxLength(40)
                 .IsUnicode(false);
@@ -23,7 +23,7 @@ namespace Train_Project.Data.Configurations
                 .HasMaxLength(30)
                 .IsUnicode(false);
             builder.Property(e => e.Password)
-                .HasMaxLength(30)
+                .HasMaxLength(256   )
                 .IsUnicode(false);
             builder.Property(e => e.Username)
                 .HasMaxLength(40)
