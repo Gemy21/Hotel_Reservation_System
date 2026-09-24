@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Train_Project.Services.Interfaces;
 using Train_Project.DTOs.Rooms;
+using Train_Project.Filters;
 
 namespace Train_Project.Controllers
 {
@@ -61,6 +62,7 @@ namespace Train_Project.Controllers
         }
 
         [HttpGet("{id}/availability")]
+        [DateRangeFilter]
         public async Task<IActionResult> CheckAvailability(
     int id,
     DateOnly from,
