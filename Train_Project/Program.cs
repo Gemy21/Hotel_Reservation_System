@@ -8,6 +8,7 @@ using Train_Project.Authentication;
 using Train_Project.Authentication.AuthEntity;
 using Train_Project.Data;
 using Train_Project.Handlers;
+using Train_Project.Filters;
 using Train_Project.Middleware;
 using Train_Project.Services;
 using Train_Project.Services.Interfaces;
@@ -20,7 +21,13 @@ namespace Train_Project
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
+            builder.Services.AddScoped<RequestTimingFilter>();
+
+            builder.Services.AddControllers(options =>
+            {
+                options.Filters.Add<ModelValidationFilter>();
+                options.Filters.AddService<RequestTimingFilter>();
+            });
 
             builder.Services.AddSwaggerGen(options =>
             {
