@@ -443,7 +443,3 @@ team-final-integration
 Each module was integrated into the final backend so that authentication, hotel/building management, room management, reservations, customers, components, and VIP functionality work as parts of the same system.
 
 ---
-
-## 📄 License
-
-No explicit open-source license is currently specified in the repository.
