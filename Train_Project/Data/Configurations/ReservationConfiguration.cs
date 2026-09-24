@@ -11,7 +11,7 @@ namespace Train_Project.Data.Configurations
 
             builder.ToTable("Reservation");
 
-            builder.Property(e => e.Id).ValueGeneratedNever();
+            builder.Property(e => e.Id).ValueGeneratedOnAdd();
             builder.Property(e => e.Status)
                 .HasMaxLength(30)
                 .IsUnicode(false);

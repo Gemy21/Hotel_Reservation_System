@@ -8,8 +8,10 @@ namespace Train_Project.Data.Configurations
         public void Configure(EntityTypeBuilder<RoomComponent> builder)
         {
             builder
-                .HasNoKey()
-                .ToTable("RoomComponent");
+            .HasKey(x => new { x.RoomId, x.ComponentId })
+            .HasName("PK_RoomComponent");
+
+            builder.ToTable("RoomComponent");
 
             builder.HasOne(d => d.Component).WithMany()
                 .HasForeignKey(d => d.ComponentId)

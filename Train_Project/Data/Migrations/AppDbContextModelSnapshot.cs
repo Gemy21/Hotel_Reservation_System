@@ -17,7 +17,7 @@ namespace Train_Project.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "8.0.31")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -32,25 +32,41 @@ namespace Train_Project.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("RefreshToken")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Roles")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Train_Project.Entities.Building", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("HotelId")
                         .HasColumnType("int");
@@ -72,7 +88,10 @@ namespace Train_Project.Migrations
             modelBuilder.Entity("Train_Project.Entities.Component", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .HasMaxLength(100)
@@ -93,7 +112,10 @@ namespace Train_Project.Migrations
             modelBuilder.Entity("Train_Project.Entities.Customer", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -112,23 +134,17 @@ namespace Train_Project.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(30)");
 
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(30)");
-
                     b.Property<long?>("Phone")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(40)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id")
                         .HasName("PK__Customer__3214EC07858D8D4E");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Customer", (string)null);
                 });
@@ -136,7 +152,10 @@ namespace Train_Project.Migrations
             modelBuilder.Entity("Train_Project.Entities.Hotel", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -150,10 +169,45 @@ namespace Train_Project.Migrations
                     b.ToTable("Hotel", (string)null);
                 });
 
+            modelBuilder.Entity("Train_Project.Entities.LateCheckOutRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Approved")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("ExtraCharge")
+                        .HasColumnType("decimal(8,2)");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ReservationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VipRoomId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReservationId");
+
+                    b.HasIndex("VipRoomId");
+
+                    b.ToTable("LateCheckOutRequest", (string)null);
+                });
+
             modelBuilder.Entity("Train_Project.Entities.Reservation", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("CustomerId")
                         .HasColumnType("int");
@@ -190,7 +244,10 @@ namespace Train_Project.Migrations
             modelBuilder.Entity("Train_Project.Entities.Room", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("BuildingId")
                         .HasColumnType("int");
@@ -232,17 +289,41 @@ namespace Train_Project.Migrations
 
             modelBuilder.Entity("Train_Project.Entities.RoomComponent", b =>
                 {
-                    b.Property<int?>("ComponentId")
+                    b.Property<int>("RoomId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("RoomId")
+                    b.Property<int>("ComponentId")
                         .HasColumnType("int");
+
+                    b.HasKey("RoomId", "ComponentId")
+                        .HasName("PK_RoomComponent");
 
                     b.HasIndex("ComponentId");
 
-                    b.HasIndex("RoomId");
-
                     b.ToTable("RoomComponent", (string)null);
+                });
+
+            modelBuilder.Entity("Train_Project.Entities.VipRoom", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<bool>("LateCheckOutAllowed")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("LateCheckOutFee")
+                        .HasColumnType("decimal(8,2)");
+
+                    b.Property<TimeOnly?>("LateCheckOutTime")
+                        .HasColumnType("time");
+
+                    b.Property<decimal>("LivingArea")
+                        .HasColumnType("decimal(6,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("VipRoom", (string)null);
                 });
 
             modelBuilder.Entity("Train_Project.Entities.Building", b =>
@@ -253,6 +334,36 @@ namespace Train_Project.Migrations
                         .HasConstraintName("FK__Building__HotelI__398D8EEE");
 
                     b.Navigation("Hotel");
+                });
+
+            modelBuilder.Entity("Train_Project.Entities.Customer", b =>
+                {
+                    b.HasOne("Train_Project.Authentication.AuthEntity.Users", "User")
+                        .WithOne("Customer")
+                        .HasForeignKey("Train_Project.Entities.Customer", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Train_Project.Entities.LateCheckOutRequest", b =>
+                {
+                    b.HasOne("Train_Project.Entities.Reservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Train_Project.Entities.VipRoom", "VipRoom")
+                        .WithMany()
+                        .HasForeignKey("VipRoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Reservation");
+
+                    b.Navigation("VipRoom");
                 });
 
             modelBuilder.Entity("Train_Project.Entities.Reservation", b =>
@@ -301,16 +412,36 @@ namespace Train_Project.Migrations
                     b.HasOne("Train_Project.Entities.Component", "Component")
                         .WithMany()
                         .HasForeignKey("ComponentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("FK__RoomCompo__Compo__4316F928");
 
                     b.HasOne("Train_Project.Entities.Room", "Room")
                         .WithMany()
                         .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("FK__RoomCompo__RoomI__4222D4EF");
 
                     b.Navigation("Component");
 
                     b.Navigation("Room");
+                });
+
+            modelBuilder.Entity("Train_Project.Entities.VipRoom", b =>
+                {
+                    b.HasOne("Train_Project.Entities.Room", "Room")
+                        .WithOne("VipRoom")
+                        .HasForeignKey("Train_Project.Entities.VipRoom", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Room");
+                });
+
+            modelBuilder.Entity("Train_Project.Authentication.AuthEntity.Users", b =>
+                {
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("Train_Project.Entities.Building", b =>
@@ -335,6 +466,8 @@ namespace Train_Project.Migrations
             modelBuilder.Entity("Train_Project.Entities.Room", b =>
                 {
                     b.Navigation("Reservations");
+
+                    b.Navigation("VipRoom");
                 });
 #pragma warning restore 612, 618
         }

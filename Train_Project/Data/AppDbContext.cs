@@ -26,6 +26,10 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Users> Users { get; set; }
 
+    public virtual DbSet<VipRoom> VipRooms { get; set; }
+
+    public virtual DbSet<LateCheckOutRequest> LateCheckOutRequests { get; set; }
+
     public AppDbContext()
     {
     }
@@ -39,5 +43,14 @@ public partial class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        modelBuilder.Entity<VipRoom>(builder =>
+        {
+          
+        });
+        modelBuilder.Entity<LateCheckOutRequest>(builder =>
+        {
+          
+        });
     }
 }

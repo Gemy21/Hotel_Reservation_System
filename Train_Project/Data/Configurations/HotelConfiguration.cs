@@ -12,7 +12,7 @@ namespace Train_Project.Data.Configurations
 
             builder.ToTable("Hotel");
 
-            builder.Property(e => e.Id).ValueGeneratedNever();
+            builder.Property(e => e.Id).ValueGeneratedOnAdd();
             builder.Property(e => e.Name)
                 .HasMaxLength(100)
                 .IsUnicode(false);

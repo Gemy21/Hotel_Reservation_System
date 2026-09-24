@@ -3,6 +3,12 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
+using Train_Project.Data;
+using Train_Project.Authentication.AuthEntity;
+using Train_Project.DTOs.Auth;
+using Microsoft.EntityFrameworkCore;
+using Train_Project.Entities;
 
 namespace Train_Project.Authentication
 {
@@ -10,9 +16,18 @@ namespace Train_Project.Authentication
     {
         private readonly JwtOption _jwtOption;
 
-        public AuthService(IOptions<JwtOption> jwtOption)
+        private readonly AppDbContext _context;
+
+        private readonly IPasswordHasher<Users> _passwordHasher;
+
+        public AuthService(
+     IOptions<JwtOption> jwtOption,
+     AppDbContext context,
+     IPasswordHasher<Users> passwordHasher)
         {
             _jwtOption = jwtOption.Value;
+            _context = context;
+            _passwordHasher = passwordHasher;
         }
 
         public string GenerateToken(int userId, string userName, string role)
@@ -37,5 +52,112 @@ namespace Train_Project.Authentication
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token); 
         }
+        public async Task<bool> RegisterAsync(RegisterDto registerDto)
+        {
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(x => x.Username == registerDto.Username);
+
+            if (existingUser != null)
+                return false;
+
+            var user = new Users
+            {
+                Username = registerDto.Username,
+                Roles = Roles.Customer
+            };
+
+            user.Password = _passwordHasher.HashPassword(
+                user,
+                registerDto.Password
+            );
+
+            var customer = new Customer
+            {
+                Name = registerDto.Name,
+                Email = registerDto.Email,
+                Location = registerDto.Location,
+
+                User = user
+            };
+
+            _context.Customers.Add(customer);
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<(string AccessToken, string RefreshToken)?> LoginAsync(LoginDto loginDto)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(x => x.Username == loginDto.Username);
+
+            if (user == null)
+                return null;
+
+            var result = _passwordHasher.VerifyHashedPassword(
+                user,
+                user.Password,
+                loginDto.Password);
+
+            if (result == PasswordVerificationResult.Failed)
+                return null;
+
+            var accessToken = GenerateToken(
+                user.Id,
+                user.Username,
+                user.Roles);
+
+            var refreshToken = Guid.NewGuid().ToString();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+            await _context.SaveChangesAsync();
+
+            return (accessToken, refreshToken);
+        }
+
+
+        public async Task<(string AccessToken, string RefreshToken)> RefreshTokenAsync(string refreshToken)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(x =>
+                    x.RefreshToken == refreshToken &&
+                    x.RefreshTokenExpiryTime > DateTime.UtcNow);
+
+            if (user == null)
+                throw new UnauthorizedAccessException("Invalid refresh token");
+
+            var accessToken = GenerateToken(
+                user.Id,
+                user.Username,
+                user.Roles);
+
+            var newRefreshToken = Guid.NewGuid().ToString();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+            await _context.SaveChangesAsync();
+
+            return (accessToken, newRefreshToken);
+        }
+
+
+        public async Task LogoutAsync(string refreshToken)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(x => x.RefreshToken == refreshToken);
+
+            if (user == null)
+                return;
+
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
+
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
