@@ -1,14 +1,20 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using Train_Project.Data;
 using Train_Project.DTOs.Rooms;
+using Train_Project.Filters;
 using Train_Project.Services.Interfaces;
 
 namespace Train_Project.Controllers
 {
     [Route("api/vip-rooms")]
     [ApiController]
+    [ServiceFilter(typeof(RequestTimingFilter))]
+    [ServiceFilter(typeof(ModelValidationFilter))]
+    [ServiceFilter(typeof(DateRangeFilter))]
+    [Authorize]
     public class VipRoomController : ControllerBase
     {
         private readonly IVipRoomService _vipRoomService;
@@ -17,7 +23,7 @@ namespace Train_Project.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllVipRooms() =>
             Ok(await _vipRoomService.GetAllVipRoomsAsync());
-
+        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetVipRoomById(int id)
         {
@@ -73,7 +79,7 @@ namespace Train_Project.Controllers
                 var result = await _vipRoomService.RequestLateCheckOutAsync(id, dto);
                 return result is null ? NotFound($"VIP room with id {id} was not found.") : Ok(result);
             }
-            catch (ArgumentException ex) { return BadRequest(ex.Message); }
+            catch (ValidationException ex) { return BadRequest(ex.Message); }
             catch (InvalidOperationException ex) { return Conflict(ex.Message); }
         }
     }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Train_Project.Data;
 
@@ -11,9 +12,11 @@ using Train_Project.Data;
 namespace Train_Project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260924135545_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,32 +35,25 @@ namespace Train_Project.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RefreshToken")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("RefreshTokenExpiryTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Roles")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Username")
-                        .IsUnique();
-
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Train_Project.Entities.Building", b =>
@@ -134,17 +130,23 @@ namespace Train_Project.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(30)");
 
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(256)");
+
                     b.Property<long?>("Phone")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(40)");
 
                     b.HasKey("Id")
                         .HasName("PK__Customer__3214EC07858D8D4E");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
 
                     b.ToTable("Customer", (string)null);
                 });
@@ -336,17 +338,6 @@ namespace Train_Project.Migrations
                     b.Navigation("Hotel");
                 });
 
-            modelBuilder.Entity("Train_Project.Entities.Customer", b =>
-                {
-                    b.HasOne("Train_Project.Authentication.AuthEntity.Users", "User")
-                        .WithOne("Customer")
-                        .HasForeignKey("Train_Project.Entities.Customer", "UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Train_Project.Entities.LateCheckOutRequest", b =>
                 {
                     b.HasOne("Train_Project.Entities.Reservation", "Reservation")
@@ -437,11 +428,6 @@ namespace Train_Project.Migrations
                         .IsRequired();
 
                     b.Navigation("Room");
-                });
-
-            modelBuilder.Entity("Train_Project.Authentication.AuthEntity.Users", b =>
-                {
-                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("Train_Project.Entities.Building", b =>

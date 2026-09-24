@@ -1,13 +1,18 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Train_Project.Services.Interfaces;
 using Train_Project.DTOs.Rooms;
 using Train_Project.Filters;
+using Train_Project.Services.Interfaces;
 
 namespace Train_Project.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [ServiceFilter(typeof(RequestTimingFilter))]
+    [ServiceFilter(typeof(ModelValidationFilter))]
+    [ServiceFilter(typeof(DateRangeFilter))]
+    [Authorize]
     public class StandardRoomController : ControllerBase
     {
         private readonly IStandardRoomServices _standardRoomService;
@@ -62,7 +67,6 @@ namespace Train_Project.Controllers
         }
 
         [HttpGet("{id}/availability")]
-        [DateRangeFilter]
         public async Task<IActionResult> CheckAvailability(
     int id,
     DateOnly from,

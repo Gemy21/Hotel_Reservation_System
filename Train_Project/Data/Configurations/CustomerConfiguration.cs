@@ -8,26 +8,37 @@ namespace Train_Project.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Customer> builder)
         {
-            builder.HasKey(e => e.Id).HasName("PK__Customer__3214EC07858D8D4E");
+            builder.HasKey(x => x.Id);
 
             builder.ToTable("Customer");
 
-            builder.Property(e => e.Id).ValueGeneratedOnAdd();
-            builder.Property(e => e.Email)
-                .HasMaxLength(40)
-                .IsUnicode(false);
-            builder.Property(e => e.Location)
-                .HasMaxLength(40)
-                .IsUnicode(false);
-            builder.Property(e => e.Name)
+            builder.Property(x => x.Id)
+                .ValueGeneratedOnAdd();
+
+            builder.Property(x => x.Name)
                 .HasMaxLength(30)
                 .IsUnicode(false);
-            builder.Property(e => e.Password)
-                .HasMaxLength(256   )
-                .IsUnicode(false);
-            builder.Property(e => e.Username)
+
+            builder.Property(x => x.Location)
                 .HasMaxLength(40)
                 .IsUnicode(false);
+
+            builder.Property(x => x.Email)
+                .HasMaxLength(40)
+                .IsUnicode(false);
+
+            builder.Property(x => x.Phone);
+
+            builder.Property(x => x.UserId)
+                .IsRequired();
+
+            builder.HasIndex(x => x.UserId)
+                .IsUnique();
+
+            builder.HasOne(x => x.User)
+                .WithOne(x => x.Customer)
+                .HasForeignKey<Customer>(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -1,11 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Train_Project.DTOs.Reservations;
+using Train_Project.Filters;
 using Train_Project.Services.Interfaces;
 
 namespace Train_Project.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [ServiceFilter(typeof(RequestTimingFilter))]
+    [ServiceFilter(typeof(ModelValidationFilter))]
+    [ServiceFilter(typeof(DateRangeFilter))]
+    [Authorize]
     public class ReservaController : ControllerBase
     {
         private readonly IReservationService _service;

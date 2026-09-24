@@ -60,31 +60,32 @@ namespace Train_Project.Authentication
             if (existingUser != null)
                 return false;
 
-            var customer = new Customer
-            {
-                Name = registerDto.Name,
-                Username = registerDto.Username,
-                Email = registerDto.Email,
-                Password = "N/A",
-                Location = registerDto.Location
-            };
-
             var user = new Users
             {
                 Username = registerDto.Username,
-                Password = _passwordHasher.HashPassword(null!, registerDto.Password),
                 Roles = Roles.Customer
             };
 
+            user.Password = _passwordHasher.HashPassword(
+                user,
+                registerDto.Password
+            );
+
+            var customer = new Customer
+            {
+                Name = registerDto.Name,
+                Email = registerDto.Email,
+                Location = registerDto.Location,
+
+                User = user
+            };
+
             _context.Customers.Add(customer);
-            _context.Users.Add(user);
 
             await _context.SaveChangesAsync();
 
             return true;
         }
-
-
 
         public async Task<(string AccessToken, string RefreshToken)?> LoginAsync(LoginDto loginDto)
         {

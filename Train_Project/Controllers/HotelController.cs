@@ -1,12 +1,18 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Train_Project.DTOs.Hotel;
+using Train_Project.Filters;
 using Train_Project.Services.Interfaces;
 
 namespace Train_Project.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [ServiceFilter(typeof(RequestTimingFilter))]
+    [ServiceFilter(typeof(ModelValidationFilter))]
+    [ServiceFilter(typeof(DateRangeFilter))]
+    [Authorize]
     public class HotelController : ControllerBase
     {
         private readonly IHotelService _hotelService;

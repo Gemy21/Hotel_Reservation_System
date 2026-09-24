@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace Train_Project.Middleware
 {
@@ -6,10 +6,8 @@ namespace Train_Project.Middleware
     {
         private readonly RequestDelegate _next;
 
-        // Keep a separate request counter for each IP address.
         private static readonly ConcurrentDictionary<string, RequestInfo> Requests = new();
 
-        // Maximum number of requests allowed from one IP in the time window.
         private const int MaxRequests = 3;
         private static readonly TimeSpan TimeWindow = TimeSpan.FromSeconds(10);
 
@@ -20,13 +18,11 @@ namespace Train_Project.Middleware
 
         public async Task InvokeAsync(HttpContext httpContext)
         {
-            // Get the client's IP address.
             var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
             var now = DateTime.UtcNow;
 
-            // Get the existing request information for this IP,
-            // or create a new entry if this is the first request.
+
             var requestInfo = Requests.GetOrAdd(
                 ipAddress,
                 _ => new RequestInfo
@@ -37,7 +33,6 @@ namespace Train_Project.Middleware
 
             lock (requestInfo)
             {
-                // If the 10-second window has expired, start a new window.
                 if (now - requestInfo.WindowStart >= TimeWindow)
                 {
                     requestInfo.Count = 0;
@@ -46,7 +41,6 @@ namespace Train_Project.Middleware
 
                 requestInfo.Count++;
 
-                // If the IP has exceeded the limit, stop the request.
                 if (requestInfo.Count > MaxRequests)
                 {
                     httpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;

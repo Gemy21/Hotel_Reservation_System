@@ -1,13 +1,18 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using Train_Project.Data;
 using Train_Project.DTOs.Customers;
+using Train_Project.Filters;
 
 namespace Train_Project.Controllers
 {
     [Route("api/customers")]
     [ApiController]
+    [ServiceFilter(typeof(RequestTimingFilter))]
+    [ServiceFilter(typeof(ModelValidationFilter))]
+    [ServiceFilter(typeof(DateRangeFilter))]
     [Authorize]
     public class CustomerController : ControllerBase
     {
@@ -18,45 +23,87 @@ namespace Train_Project.Controllers
             _context = context;
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetCustomer(int id)
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyCustomer()
         {
+            var userIdClaim = User.FindFirstValue(
+                ClaimTypes.NameIdentifier
+            );
+
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized();
+
             var customer = await _context.Customers
-                .Where(x => x.Id == id)
-                .Select(x => new
-                {
-                    x.Id,
-                    x.Name,
-                    x.Username,
-                    x.Location,
-                    x.Email,
-                    x.Phone
-                })
-                .FirstOrDefaultAsync();
+                .Include(x => x.User)
+                .FirstOrDefaultAsync(x => x.UserId == userId);
 
             if (customer == null)
-                return NotFound();
+                return NotFound("Customer not found.");
 
-            var currentUsername = User.Identity?.Name;
-
-            if (customer.Username != currentUsername)
-                return Forbid();
-
-            return Ok(customer);
+            return Ok(new
+            {
+                customer.Id,
+                customer.Name,
+                customer.Location,
+                customer.Email,
+                customer.Phone,
+                customer.UserId,
+                Username = customer.User.Username
+            });
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCustomer(int id, UpdateCustomerDto dto)
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetCustomer(int id)
         {
+            var userIdClaim = User.FindFirstValue(
+                ClaimTypes.NameIdentifier
+            );
+
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized();
+
             var customer = await _context.Customers
+                .Include(x => x.User)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             if (customer == null)
                 return NotFound();
 
-            var currentUsername = User.Identity?.Name;
+            if (customer.UserId != userId)
+                return Forbid();
 
-            if (customer.Username != currentUsername)
+            return Ok(new
+            {
+                customer.Id,
+                customer.Name,
+                customer.Location,
+                customer.Email,
+                customer.Phone,
+                customer.UserId,
+                Username = customer.User.Username
+            });
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateCustomer(
+            int id,
+            UpdateCustomerDto dto)
+        {
+            var userIdClaim = User.FindFirstValue(
+                ClaimTypes.NameIdentifier
+            );
+
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized();
+
+            var customer = await _context.Customers
+                .Include(x => x.User)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (customer == null)
+                return NotFound();
+
+            if (customer.UserId != userId)
                 return Forbid();
 
             customer.Name = dto.Name;
@@ -70,10 +117,11 @@ namespace Train_Project.Controllers
             {
                 customer.Id,
                 customer.Name,
-                customer.Username,
                 customer.Location,
                 customer.Email,
-                customer.Phone
+                customer.Phone,
+                customer.UserId,
+                Username = customer.User.Username
             });
         }
     }
