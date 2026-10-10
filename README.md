@@ -406,20 +406,6 @@ The project documentation should also include the team's original system/domain 
 
 ---
 
-## 👥 Team
-
-This project was developed collaboratively.
-
-**Team members will be listed here with their GitHub usernames once the final team list is provided.**
-
-| Member | GitHub |
-|---|---|
-| _To be added_ | _To be added_ |
-| _To be added_ | _To be added_ |
-| _To be added_ | _To be added_ |
-| _To be added_ | _To be added_ |
-
----
 
 ## 📚 Project Documentation
 
